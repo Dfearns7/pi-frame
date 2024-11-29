@@ -11,7 +11,7 @@ from PIL import Image
 from inky.auto import auto
 from inky.inky_uc8159 import CLEAN
 
-picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'Github/pi-frame/images')
+picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), '/pi-frame/images')
 photo_count = 642
 random_number_array = sample(range(0, photo_count), photo_count)
 photo_array = []
