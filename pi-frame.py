@@ -7,11 +7,13 @@ from gpiod.line import Bias, Direction, Edge
 import time
 import os
 import argparse
+import logging
 from PIL import Image
 from inky.auto import auto
 from inky.inky_uc8159 import CLEAN
 
-picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), '/pi-frame/images')
+
+picdir = os.path.join(os.path.dirname(__file__), 'images')
 photo_count = 642
 random_number_array = sample(range(0, photo_count), photo_count)
 photo_array = []
@@ -19,6 +21,8 @@ picture_syntax = {'color':'A','BW':"B"}
 default_picture_syntax = "color"
 photo_format = ".jpg"
 wait_time_for_next_photo = 3600
+
+logging.basicConfig(level=logging.DEBUG)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--saturation", "-s", type=float, default=0.5, help="Colour palette saturation")
@@ -43,10 +47,10 @@ def initalise_photo_array():
             photo_array.append('000' + str(random_number_array[i]) + photo_format)
         if random_number_array[i] >= 100:
             photo_array.append('00' + str(random_number_array[i]) + photo_format)
-    print("created photo array")
+    logging.info("created photo array")
 
 def clean():
-    print("Clear display started")
+    logging.info("Clear display started")
     for _ in range(2):
         for y in range(inky.height - 1):
             for x in range(inky.width - 1):
@@ -54,11 +58,11 @@ def clean():
 
     inky.show()
     time.sleep(1.0)
-    print("Clear display finished")
+    logging.info("Clear display finished")
 
 def wait_unless_button_pressed(minutes):
     global default_picture_syntax
-    print('waiting ' + wait_time_for_next_photo/60 + ' Minutes')
+    logging.info('waiting ' + str(wait_time_for_next_photo/60) + ' Minutes')
     for i in range(minutes):
         try:
             time.sleep(1)
@@ -67,34 +71,34 @@ def wait_unless_button_pressed(minutes):
             if str(get_button_status[0]).strip("Value.") != "ACTIVE":
                 index = offsets.index(buttons[0])
                 label = labels[index]
-                print('button ' + label + ' was pressed, next photo')
+                logging.info('button ' + label + ' was pressed, next photo')
                 return 1
             elif str(get_button_status[1]).strip("Value.") != "ACTIVE":
                 index = offsets.index(buttons[1])
                 label = labels[index]
-                print('button ' + label + ' was pressed, previous photo')
+                logging.info('button ' + label + ' was pressed, previous photo')
                 return 2
             elif str(get_button_status[2]).strip("Value.") != "ACTIVE":
                 index = offsets.index(buttons[2])
                 label = labels[index]
                 if default_picture_syntax == 'color':
                     default_picture_syntax = 'BW'
-                    print('button ' + label + ' was pressed, changed photos to black and white')
+                    logging.info('button ' + label + ' was pressed, changed photos to black and white')
                 else:
                     default_picture_syntax = 'color' 
-                    print('button ' + label + ' was pressed, changed photos to color')
+                    logging.info('button ' + label + ' was pressed, changed photos to color')
                 return 3
             elif str(get_button_status[3]).strip("Value.") != "ACTIVE":
                 index = offsets.index(buttons[3])
                 label = labels[index]
-                print('button ' + label + ' was pressed, rebooting')
+                logging.info('button ' + label + ' was pressed, rebooting')
                 return 4
     return '0'
 
 
 def update(int):
         image_location = picdir + '/' +  default_picture_syntax + '/' + picture_syntax[default_picture_syntax] + photo_array[int]
-        print('displaying image: ' + image_location + ', image number in array: ' + str(int) + '/' + str(photo_count))
+        logging.info('displaying image: ' + image_location + ', image number in array: ' + str(int) + '/' + str(photo_count))
         image = Image.open(image_location)
         resizedimage = image.resize(inky.resolution)
         
@@ -104,11 +108,11 @@ def update(int):
             inky.set_image(resizedimage)
 
         inky.show()
-        print('display image finished')
+        logging.info('display image finished')
         
     
 def main():
-    print("initalising...")
+    logging.info("initalising...")
     initalise_photo_array()
     clean()
     i = 0
@@ -128,7 +132,7 @@ def main():
                 i+= 1
 
     finally:
-        print("clearing screen before shutdown")
+        logging.info("clearing screen before shutdown")
         clean()
         os.system('sudo reboot')
 
