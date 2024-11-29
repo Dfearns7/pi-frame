@@ -1,4 +1,7 @@
 #!/bin/bash
+
+sleep 15s
+
 echo "Starting pi-frame"
 
 cd $(dirname $0)
